@@ -1,16 +1,27 @@
 <?php   
+declare(strict_types=1);
+
 const API_URL = "https://whenisthenextmcufilm.com/api";
-# Inicializar una nueva sesion de cURL; ch = cURL handle
-$ch = curl_init(API_URL);
 
+function get_data($url) {
+    $result = file_get_contents($url);
+    $data = json_decode($result, true);
+    return $data;
+}
 
-# Indicar que queremos recibir el resultado de la peticion y no mosrarla en pantalla.
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+function get_until_message($days):string
+{
+    return match (true){
+        $days === 0 => "Hoy es el estreno!!!",
+        $days === 1 => "Mañana es el estreno!!!",
+        $days <7    => "Esta semana es el estreno!!!",
+        $days <30   => "Este mes es el estreno!!!",
+        default => " Faltan $days",
+    };
+};
 
-$result = curl_exec($ch);
-$data = json_decode($result, true);
-curl_close($ch);
-
+$data = get_data(API_URL);
+$untilMessage = get_until_message()
 ?>
 
 <head>
@@ -31,30 +42,7 @@ curl_close($ch);
     </section>
 
     <hgroup>
-        <h3><?= $data["title"]; ?> se estrena en <?= $data["days_until"]; ?> días</h3>
+        <h3><?= $data["title"]; ?> se estrena en - <?= $untilMessage ?> días</h3>
         <p>Fecha de estreno: <?= $data ["release_date"]; ?></p>
         <p>La siguente es: <?= $data ["following_production"]["title"]; ?></p>
-    </hgroup>
-</main>
-
-<style>
-    body {
-        display: grid;
-        place-content: center;
-    }
-
-    section {
-        display: flex;
-        justify-content: center;
-        text-align: center;
-    }
-
-    hgroup {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        text-align: center;
-    }
-
-
-</style>
+ 
